@@ -1,53 +1,98 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 import HomeNavBar from '../../Components/HomeComponents/HomeNavBar.vue'
+
+const quotes = ref([])
+const featuredQuote = ref({ text: '', philosopher: 'Unknown', era: '' })
+
+const loadingQuote = ref(true)
+const quoteError = ref("")
 
 const router = useRouter()
 
-const quotes = [
-  {
-    text: "The unexamined life is not worth living.",
-    author: "Socrates",
-    era: "470–399 BC",
-  },
-  {
-    text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
-    author: "Aristotle",
-    era: "384–322 BC",
-  },
-  {
-    text: "I think, therefore I am.",
-    author: "René Descartes",
-    era: "1596–1650",
-  },
-]
+const api = axios.create({
+  baseURL: "http://localhost:8081"
+})
 
-const featuredQuote = ref(quotes[0])
 let quoteTimeout = null
 
+const fetchRandomQuote = async () => {
+  loadingQuote.value = true
+  quoteError.value = ""
+
+  try {
+    const { data } = await api.get("/quote/get")
+
+    quotes.value = Array.isArray(data) ? data : [data]
+
+    if (quotes.value.length) {
+      featuredQuote.value = quotes.value[0]
+    }
+
+  } catch (error) {
+
+    quoteError.value = "Unable to load a quote right now."
+
+    quotes.value = [
+      {
+        text: "The only thing I know is that I know nothing.",
+        philosopher: "Socrates",
+        era: "Classical Greece"
+      }
+    ]
+
+    featuredQuote.value = quotes.value[0]
+  } finally {
+    loadingQuote.value = false
+  }
+}
+
 const rotateQuote = () => {
-  const currentIndex = quotes.findIndex(q => q.text === featuredQuote.value.text)
-  const nextIndex = (currentIndex + 1) % quotes.length
-  featuredQuote.value = quotes[nextIndex]
-  
-  // Calculate delay based on text length (100ms per character, min 3s for readability)
+
+  if (!quotes.value.length || !featuredQuote.value?.text) return
+
+  const currentIndex = quotes.value.findIndex(
+    q => q.text === featuredQuote.value.text
+  )
+
+  const nextIndex = (currentIndex + 1) % quotes.value.length
+  featuredQuote.value = quotes.value[nextIndex]
+
   const delay = Math.max(featuredQuote.value.text.length * 100, 3000)
+
   quoteTimeout = setTimeout(rotateQuote, delay)
 }
 
-onMounted(() => {
-  featuredQuote.value = quotes[Math.floor(Math.random() * quotes.length)]
-  const initialDelay = Math.max(featuredQuote.value.text.length * 100,3000)
-  quoteTimeout = setTimeout(rotateQuote, initialDelay)
+onMounted(async () => {
+
+  await fetchRandomQuote()
+
+  if (quotes.value.length) {
+
+    const randomIndex = Math.floor(Math.random() * quotes.value.length)
+
+    featuredQuote.value = quotes.value[randomIndex]
+
+    const initialDelay =
+      Math.max(featuredQuote.value.text.length * 100, 3000)
+
+    quoteTimeout = setTimeout(rotateQuote, initialDelay)
+  }
 })
 
 onUnmounted(() => {
   if (quoteTimeout) clearTimeout(quoteTimeout)
 })
 
-const getInitials = (name) => {
-  return name.split(" ").map(w => w[0]).join("").slice(0, 2)
+const getInitials = (name = '') => {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map(w => w[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2)
 }
 </script>
 
@@ -85,11 +130,10 @@ const getInitials = (name) => {
 
             <div class="hero-actions">
               <router-link to="/auth?mode=register" class="btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                 Join the Community
               </router-link>
+
               <router-link to="/about" class="btn-secondary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                 Learn More
               </router-link>
             </div>
@@ -98,22 +142,57 @@ const getInitials = (name) => {
           <!-- Quote card -->
           <aside class="hero-card-col" aria-label="Featured philosophical quote">
             <transition name="quote-fade" mode="out-in">
-              <div :key="featuredQuote.text" class="quote-card">
+              <div v-if="loadingQuote" key="skeleton" class="quote-card">
                 <span class="quote-mark" aria-hidden="true">&ldquo;</span>
-                <p class="quote-text">{{ featuredQuote.text }}</p>
+
+                <div class="quote-text skeleton-text"></div>
+
                 <div class="quote-author-row">
-                  <div class="quote-avatar" aria-hidden="true">
-                    <span>{{ getInitials(featuredQuote.author) }}</span>
-                  </div>
+                  <div class="quote-avatar skeleton-avatar"></div>
+
                   <div>
-                    <p class="quote-author-name">{{ featuredQuote.author }}</p>
-                    <p class="quote-author-era">{{ featuredQuote.era }}</p>
+                    <p class="quote-author-name skeleton-text"></p>
+                    <p class="quote-author-era skeleton-text"></p>
                   </div>
                 </div>
+
                 <div class="quote-footer">
-                  <span class="quote-tag">Featured Quote</span>
-                  <router-link to="/auth?mode=register" class="quote-cta">
-                    Discuss this &rarr;
+                  <span class="quote-tag skeleton-text"></span>
+                  <div class="quote-cta skeleton-text"></div>
+                </div>
+              </div>
+
+              <div v-else :key="featuredQuote.text" class="quote-card">
+                <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+
+                <p class="quote-text">
+                  {{ featuredQuote.text }}
+                </p>
+
+                <div class="quote-author-row">
+                  <div class="quote-avatar">
+                    <span>{{ getInitials(featuredQuote.philosopher) }}</span>
+                  </div>
+
+                  <div>
+                    <p class="quote-author-name">
+                      {{ featuredQuote.philosopher }}
+                    </p>
+
+                    <p class="quote-author-era">
+                      {{ featuredQuote.era }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="quote-footer">
+                  <span class="quote-tag">Hot Quotes</span>
+
+                  <router-link
+                    to="/auth?mode=register"
+                    class="quote-cta"
+                  >
+                    Discuss this →
                   </router-link>
                 </div>
               </div>
@@ -123,58 +202,102 @@ const getInitials = (name) => {
       </section>
 
       <!-- Features -->
-      <section class="features-section" aria-labelledby="features-heading">
+      <section class="features-section">
         <div class="section-inner">
           <p class="section-eyebrow">Why PhiloHub</p>
-          <h2 id="features-heading" class="section-title">Built for serious thinkers</h2>
+
+          <h2 class="section-title">
+            Built for serious thinkers
+          </h2>
+
           <p class="section-desc">
-            Every feature is designed to foster deep, rigorous discussion — not surface-level noise.
+            Every feature is designed to foster deep, rigorous discussion —
+            not surface-level noise.
           </p>
+
           <div class="features-grid">
             <article class="feature-card">
-              <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <h3 class="feature-title">Curated Community</h3>
-              <p class="feature-desc">Join a verified network of philosophers, academics, and curious minds committed to intellectual rigour.</p>
+              <div class="feature-icon"></div>
+
+              <h3 class="feature-title">
+                Curated Community
+              </h3>
+
+              <p class="feature-desc">
+                Join a verified network of philosophers,
+                academics, and curious minds committed
+                to intellectual rigour.
+              </p>
             </article>
+
             <article class="feature-card">
-              <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </div>
-              <h3 class="feature-title">Structured Debates</h3>
-              <p class="feature-desc">Dialectic threads with argument-counter argument structure keep discussions focused and productive.</p>
+              <div class="feature-icon"></div>
+
+              <h3 class="feature-title">
+                Structured Debates
+              </h3>
+
+              <p class="feature-desc">
+                Dialectic threads with argument-counter
+                argument structure keep discussions
+                focused and productive.
+              </p>
             </article>
+
             <article class="feature-card">
-              <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              </div>
-              <h3 class="feature-title">Reading Groups</h3>
-              <p class="feature-desc">Sync your reading with others — from Plato to contemporary analytic philosophy — with guided commentary.</p>
+              <div class="feature-icon"></div>
+
+              <h3 class="feature-title">
+                Reading Groups
+              </h3>
+
+              <p class="feature-desc">
+                Sync your reading with others —
+                from Plato to contemporary philosophy.
+              </p>
             </article>
+
             <article class="feature-card">
-              <div class="feature-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              </div>
-              <h3 class="feature-title">Global Reach</h3>
-              <p class="feature-desc">Thinkers from over 60 countries contribute to a rich, cross-cultural tapestry of philosophical traditions.</p>
+              <div class="feature-icon"></div>
+
+              <h3 class="feature-title">
+                Global Reach
+              </h3>
+
+              <p class="feature-desc">
+                Thinkers from over 60 countries contribute
+                to a cross-cultural philosophical dialogue.
+              </p>
             </article>
           </div>
         </div>
       </section>
 
       <!-- CTA -->
-      <section class="cta-section" aria-labelledby="cta-heading">
+      <section class="cta-section">
         <div class="cta-inner">
-          <h2 id="cta-heading" class="cta-title">Ready to begin<br />your philosophical journey?</h2>
+          <h2 class="cta-title">
+            Ready to begin<br />
+            your philosophical journey?
+          </h2>
+
           <p class="cta-desc">
-            Join thousands of thinkers already shaping the conversations that matter most.
+            Join thousands of thinkers already shaping
+            the conversations that matter most.
           </p>
+
           <div class="cta-actions">
-            <router-link to="/auth?mode=register" class="btn-primary">
+            <router-link
+              to="/auth?mode=register"
+              class="btn-primary"
+            >
               Get Started — It's Free
             </router-link>
-            <router-link to="/auth?mode=login" class="btn-secondary">
+
+            <router-link
+              to="/auth?mode=login"
+              class="btn-secondary"
+            >
               Sign In
             </router-link>
           </div>
@@ -183,10 +306,13 @@ const getInitials = (name) => {
     </main>
 
     <footer class="home-footer">
-      <p class="footer-text">© 2026 PhiloHub — Dedicated to the pursuit of wisdom.</p>
+      <p class="footer-text">
+        © 2026 PhiloHub — Dedicated to the pursuit of wisdom.
+      </p>
     </footer>
   </div>
 </template>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -203,17 +329,15 @@ const getInitials = (name) => {
 /* ── Transitions ── */
 .quote-fade-enter-active,
 .quote-fade-leave-active {
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .quote-fade-enter-from {
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
-  filter: blur(4px);
+  transform: translateY(8px) scale(0.96);
 }
 .quote-fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.98);
-  filter: blur(4px);
+  transform: translateY(-8px) scale(0.96);
 }
 
 /* ── Main ── */
@@ -654,5 +778,46 @@ const getInitials = (name) => {
 @media (max-width: 640px) {
   .hero-section { padding: 2.5rem 1rem; }
   .features-section, .cta-section { padding: 3.5rem 1rem; }
+}
+
+/* ── Skeleton Loading ── */
+.skeleton-text {
+  background: linear-gradient(90deg, #F9F7F7 25%, #DBE2EF 50%, #F9F7F7 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 2s infinite ease-in-out;
+  border-radius: 0.25rem;
+}
+.skeleton-text.quote-text {
+  height: 4rem;
+  margin: 0 0 1.5rem;
+}
+.skeleton-text.quote-author-name {
+  height: 1rem;
+  width: 6rem;
+  margin: 0 0 0.25rem;
+}
+.skeleton-text.quote-author-era {
+  height: 0.875rem;
+  width: 4rem;
+}
+.skeleton-text.quote-tag {
+  height: 0.75rem;
+  width: 4rem;
+}
+.skeleton-text.quote-cta {
+  height: 0.875rem;
+  width: 5rem;
+}
+.skeleton-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #DBE2EF 25%, #F9F7F7 50%, #DBE2EF 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 2s infinite ease-in-out;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 </style>

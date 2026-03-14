@@ -15,7 +15,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)
     {
     httpSecurity.csrf(AbstractHttpConfigurer::disable)
-             .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/**").permitAll().anyRequest().authenticated())
+              .cors(cors ->{})
+             .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->authorizationManagerRequestMatcherRegistry.
+                     requestMatchers("/admin/**").permitAll()
+                     .requestMatchers("/quote/get").permitAll().anyRequest().authenticated())
+
              .httpBasic(httpBasic -> {});
     return httpSecurity.build();
     }

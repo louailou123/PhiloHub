@@ -3,11 +3,11 @@ package App.PhiloHub.Exeptions;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.security.sasl.AuthenticationException;
 import java.util.HashMap;
@@ -47,5 +47,15 @@ public class GlobalExceptionHandler {
   public ResponseEntity<?> handleDataIntegrityViolationExeption (DataIntegrityViolationException ex)
   {
     return ResponseEntity.status(400).body(Map.of("error", "Duplicted value"));
+  }
+  @ExceptionHandler(NoHandlerFoundException.class)
+  public ResponseEntity<?> handleNoHandlerFoundException ()
+  {
+    return ResponseEntity.status(404).body(Map.of("error","method not found"));
+  }
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<?> handleMethodNotSupportedException (HttpRequestMethodNotSupportedException ex)
+  {
+    return ResponseEntity.status(404).body(Map.of("error",ex.getMessage()));
   }
 }

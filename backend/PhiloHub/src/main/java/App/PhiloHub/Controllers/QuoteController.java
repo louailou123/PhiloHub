@@ -1,38 +1,26 @@
 package App.PhiloHub.Controllers;
 
-import App.PhiloHub.Api.ApiResponse;
 import App.PhiloHub.Models.Quote;
-import App.PhiloHub.Repositories.QuoteRepository;
-import App.PhiloHub.Services.QuoteServices;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Null;
-import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import App.PhiloHub.Services.QuoteService;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.util.Map;
+import java.util.List;
+
 
 @RestController
-@RequestMapping("/admin")
-@RequiredArgsConstructor
+@AllArgsConstructor
+@RequestMapping("/quote")
 public class QuoteController {
-   private final QuoteServices quoteServices;
 
+    private final QuoteService quoteService;
 
-    @PostMapping("/add/quote")
-    public ResponseEntity<?> addQuote (@RequestBody @Valid Quote quote)
+    @GetMapping("/get")
+    public List<Quote> getAllQuotes ()
     {
-            quoteServices.addQuote(quote);
-            ApiResponse apiResponse = new ApiResponse<>();
-            apiResponse.setMessage("New quote added");
-            apiResponse.setSuccess(true);
-            apiResponse.setTimestamp(LocalDate.now());
-            return ResponseEntity.status(201).body(apiResponse);
+       return quoteService.getAllQuotes();
 
     }
 }
