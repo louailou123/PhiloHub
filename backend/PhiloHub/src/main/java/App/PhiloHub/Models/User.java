@@ -50,8 +50,12 @@ public class User {
 
     @NotNull
     @Column(name = "country")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_country")
     private Country country;
+
+
+
 
     private Boolean enabled=true;
 

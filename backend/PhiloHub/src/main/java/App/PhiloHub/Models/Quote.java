@@ -25,7 +25,7 @@ public class Quote {
     @Column(unique = true)
     private String text;
     @NotBlank(message = "Philosopher must not be null")
-    @Size(max = 30, message ="too long name for a philosopher")
+    @Size(max = 100, message ="too long name for a philosopher")
 
     private String philosopher;
     @NotBlank(message = "era must not be null")
