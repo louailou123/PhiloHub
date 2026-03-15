@@ -1,4 +1,4 @@
-package App.PhiloHub.Exeptions;
+package App.PhiloHub.Exceptions;
 
 public class QuoteException extends Exception{
     public QuoteException(String message) {

@@ -1,4 +1,4 @@
-package App.PhiloHub.Exeptions;
+package App.PhiloHub.Exceptions;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
