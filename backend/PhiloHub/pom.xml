@@ -26,9 +26,10 @@
 		<tag/>
 		<url/>
 	</scm>
-	<properties>
-		<java.version>25</java.version>
-	</properties>
+<properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -96,7 +97,7 @@
      <artifactId>hibernate-core</artifactId>
      <version>5.5.0.Beta1</version>
    </dependency>
- </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>
