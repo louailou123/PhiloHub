@@ -1,6 +1,5 @@
 package App.PhiloHub.config;
 
-import org.hibernate.loader.collection.OneToManyJoinWalker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

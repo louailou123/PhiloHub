@@ -1,12 +1,13 @@
 package App.PhiloHub.Services;
 
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import App.PhiloHub.Models.Quote;
 import App.PhiloHub.Repositories.QuoteRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,12 @@ public class QuoteService {
         addedQuote.setEra(quote.getEra());
         quoteRepository.save(addedQuote);
     }
+
+    public void addQuotes(List<Quote> quotes)
+    {
+        quoteRepository.saveAll(quotes);
+    }
+
     public List<Quote> getAllQuotes ()
     {
         return quoteRepository.findAll();

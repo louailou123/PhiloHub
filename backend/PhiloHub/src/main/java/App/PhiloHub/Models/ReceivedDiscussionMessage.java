@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 // imported below
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,9 @@ public class ReceivedDiscussionMessage {
     @MapsId("idReceiver")
     @JoinColumn(name = "id_receiver")
     private User receiver;
+    
+    @Column(name = "seen_at")
+    private LocalDate seenAt;
     
     @Enumerated(EnumType.STRING)
     @jakarta.validation.constraints.NotNull

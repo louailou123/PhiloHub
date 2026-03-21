@@ -85,6 +85,24 @@ public class User {
     @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
     private List<ReceivedDiscussionMessage> receivedDiscussionMessages = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Feedback> feedbacks = new ArrayList<>();
+
+    @Column(name = "created_at")
+    private LocalDate createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDate updatedAt;
+
+    @Column(name = "last_login")
+    private LocalDate lastLogin;
+
+    @Column(name = "is_verified")
+    private Boolean isVerified=false;
+
+    @Column(name = "is_banned")
+    private Boolean isBanned=false;
+
     @Column(name = "is_enabled")
     private Boolean enabled=true;
 

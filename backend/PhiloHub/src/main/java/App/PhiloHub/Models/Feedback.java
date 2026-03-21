@@ -2,44 +2,45 @@ package App.PhiloHub.Models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
-@Table(name = "profile_pictures")
+@Table(name = "feedback")
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class ProfilePicture {
-
+public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_profile_picture")
+    @Column(name = "id_feedback")
     private long id;
 
-    @NotBlank(message = "profile picture URL is required")
-    @Size(max = 255, message = "profile picture URL is too long")
-    @Column(name = "picture_url")
-    private String pictureUrl;
+    @Column(name = "feedback_message")
+    private String feedbackMessage;
 
-    @Column(name = "created_at")
-    private LocalDate createdAt;
+    @Column(name = "feedback_created_at")
+    private LocalDate feedbackCreatedAt;
+    
+    @Column(name = "is_read")
+    private boolean isRead=false;
+      
+    @Column(name = "read_at")
+    private LocalDate readAt;
 
-    @Column(name = "updated_at")
-    private LocalDate updatedAt;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_feedback_type")
+    private FeedbackType feedbacksType;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user")
     private User user;
