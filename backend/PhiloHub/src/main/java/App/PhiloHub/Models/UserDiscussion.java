@@ -2,7 +2,7 @@ package App.PhiloHub.Models;
 
 import java.time.LocalDate;
 
-import App.PhiloHub.Models.Enum.Role;
+import App.PhiloHub.Models.Enum.DiscussionRole;
 import App.PhiloHub.Models.JoinTablesKeys.UserDiscussionKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -32,12 +32,12 @@ public class UserDiscussion {
     private UserDiscussionKey id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
+    @MapsId("idUser")
     @JoinColumn(name = "id_user")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("discussionId")
+    @MapsId("idDiscussion")
     @JoinColumn(name = "id_discussion")
     private Discussion discussion;
     
@@ -50,7 +50,7 @@ public class UserDiscussion {
     @NotBlank
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private Role role;
+    private DiscussionRole role;
     
     @Column(name = "is_enabled")
     private Boolean isEnabled=true;

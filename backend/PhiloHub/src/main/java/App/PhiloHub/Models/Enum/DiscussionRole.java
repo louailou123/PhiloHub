@@ -1,6 +1,6 @@
 package App.PhiloHub.Models.Enum;
 
-public enum Role {
+public enum DiscussionRole {
     CREATOR,
     ADMIN,
     SIMPLE

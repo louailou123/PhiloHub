@@ -14,22 +14,24 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 
 @Entity
-@Table(name = "sent_discussion_messages")
+@Table(name = "discussion_messages")
 @RequiredArgsConstructor
 @Getter
 @Setter
 public class DiscussionMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_sent_discussion_message")
+    @Column(name = "id_discussion_message")
     private long id;
-
+    
+    @Size(max=1000 , message="message is too long")
     @Column(name = "message")
     private String message;
 
