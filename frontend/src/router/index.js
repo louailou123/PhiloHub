@@ -3,12 +3,14 @@ import { useAuthStore } from '../stores/auth'
 import Home from '../views/HomeViews/home.vue'
 import Auth from '../views/HomeViews/Auth.vue'
 import About from '../views/HomeViews/AboutView.vue'
+import OAuthCallback from '../views/HomeViews/OAuthCallback.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
   { path: '/home', name: 'Home', component: Home },
   { path: '/auth', name: 'Auth', component: Auth },
   { path: '/about', name: 'About', component: About },
+  { path: '/auth/oauth-callback', name: 'OAuthCallback', component: OAuthCallback },
 ]
 
 const router = createRouter({

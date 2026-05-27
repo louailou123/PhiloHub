@@ -15,17 +15,16 @@ const loginForm = ref({ email: '', password: '' })
 const loginErrors = ref({ email: '', password: '' })
 
 const registerForm = ref({
-  name: '',
+  firstName: '',
+  lastName: '',
+  username: '',
   email: '',
   password: '',
   confirmPassword: '',
+  bithdate: '2000-01-01',
+  countryId: 1
 })
-const registerErrors = ref({
-  name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-})
+const registerErrors = ref({})
 
 const showLoginPw = ref(false)
 const showRegPw = ref(false)
@@ -105,11 +104,12 @@ const handleLogin = async () => {
 
   isSubmitting.value = true
   try {
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1200))
+    const authStore = (await import('../../stores/auth')).useAuthStore()
+    await authStore.login(loginForm.value.email, loginForm.value.password)
     showToast('success', 'Welcome back!', 'You have been signed in.')
-  } catch {
-    showToast('error', 'Login Failed', 'Invalid credentials. Please try again.')
+    router.push('/home')
+  } catch(e) {
+    showToast('error', 'Login Failed', e.message || 'Invalid credentials. Please try again.')
   } finally {
     isSubmitting.value = false
   }
@@ -117,10 +117,18 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
   let valid = true
-  registerErrors.value = { name: '', email: '', password: '', confirmPassword: '' }
+  registerErrors.value = {}
 
-  if (!registerForm.value.name.trim()) {
-    registerErrors.value.name = 'Full name is required.'
+  if (!registerForm.value.firstName.trim()) {
+    registerErrors.value.firstName = 'First name is required.'
+    valid = false
+  }
+  if (!registerForm.value.lastName.trim()) {
+    registerErrors.value.lastName = 'Last name is required.'
+    valid = false
+  }
+  if (!registerForm.value.username.trim()) {
+    registerErrors.value.username = 'Username is required.'
     valid = false
   }
   if (!registerForm.value.email) {
@@ -137,10 +145,7 @@ const handleRegister = async () => {
     registerErrors.value.password = 'Password must be at least 8 characters.'
     valid = false
   }
-  if (!registerForm.value.confirmPassword) {
-    registerErrors.value.confirmPassword = 'Please confirm your password.'
-    valid = false
-  } else if (registerForm.value.password !== registerForm.value.confirmPassword) {
+  if (registerForm.value.password !== registerForm.value.confirmPassword) {
     registerErrors.value.confirmPassword = 'Passwords do not match.'
     valid = false
   }
@@ -149,14 +154,12 @@ const handleRegister = async () => {
 
   isSubmitting.value = true
   try {
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1400))
+    const authStore = (await import('../../stores/auth')).useAuthStore()
+    await authStore.register(registerForm.value)
     showToast('success', 'Account Created', 'Welcome to PhiloHub!')
-    switchMode('login')
-    loginForm.value.email = registerForm.value.email
-    registerForm.value = { name: '', email: '', password: '', confirmPassword: '' }
-  } catch {
-    showToast('error', 'Registration Failed', 'That email may already be in use.')
+    router.push('/home')
+  } catch(e) {
+    showToast('error', 'Registration Failed', e.message || 'Could not register.')
   } finally {
     isSubmitting.value = false
   }
@@ -164,7 +167,7 @@ const handleRegister = async () => {
 
 const handleSocialLogin = (provider) => {
   showToast('info', `Connecting to ${provider}...`, 'Redirecting to social login.')
-  // Integration logic for OAuth would go here
+  window.location.href = `http://localhost:8081/oauth2/authorization/${provider.toLowerCase()}`
 }
 </script>
 
@@ -288,18 +291,48 @@ const handleSocialLogin = (provider) => {
             <!-- Register Form -->
             <form v-else key="register" class="auth-form" novalidate @submit.prevent="handleRegister">
               <div class="field-group">
-                <label for="reg-name" class="field-label">Full name</label>
+                <label for="reg-first-name" class="field-label">First name</label>
                 <input
-                  id="reg-name"
-                  v-model="registerForm.name"
+                  id="reg-first-name"
+                  v-model="registerForm.firstName"
                   type="text"
                   class="p-input"
-                  :class="{ invalid: !!registerErrors.name }"
-                  placeholder="Jane Doe"
-                  autocomplete="name"
-                  @input="registerErrors.name = ''"
+                  :class="{ invalid: !!registerErrors.firstName }"
+                  placeholder="Jane"
+                  autocomplete="given-name"
+                  @input="registerErrors.firstName = ''"
                 />
-                <small v-if="registerErrors.name" class="field-error" role="alert">{{ registerErrors.name }}</small>
+                <small v-if="registerErrors.firstName" class="field-error" role="alert">{{ registerErrors.firstName }}</small>
+              </div>
+
+              <div class="field-group">
+                <label for="reg-last-name" class="field-label">Last name</label>
+                <input
+                  id="reg-last-name"
+                  v-model="registerForm.lastName"
+                  type="text"
+                  class="p-input"
+                  :class="{ invalid: !!registerErrors.lastName }"
+                  placeholder="Doe"
+                  autocomplete="family-name"
+                  @input="registerErrors.lastName = ''"
+                />
+                <small v-if="registerErrors.lastName" class="field-error" role="alert">{{ registerErrors.lastName }}</small>
+              </div>
+
+              <div class="field-group">
+                <label for="reg-username" class="field-label">Username</label>
+                <input
+                  id="reg-username"
+                  v-model="registerForm.username"
+                  type="text"
+                  class="p-input"
+                  :class="{ invalid: !!registerErrors.username }"
+                  placeholder="janedoe"
+                  autocomplete="username"
+                  @input="registerErrors.username = ''"
+                />
+                <small v-if="registerErrors.username" class="field-error" role="alert">{{ registerErrors.username }}</small>
               </div>
 
               <div class="field-group">

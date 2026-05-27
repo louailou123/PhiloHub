@@ -1,12 +1,11 @@
 package App.PhiloHub.Models;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -24,13 +23,13 @@ public class Country {
     @Column(name = "id_country")
     private long id;
 
-    @NotNull
-    @Size(max = 30)
+    @NotNull(message = "Country name is required")
+    @Size(max = 70,message = "Country name must be less than 70 characters")
     @Column(name = "name")
     private String name;
 
-    @NotNull
-    @Size(max = 30)
+    @NotNull(message = "Country code is required")
+    @Size(max = 3,message = "Country code must be less than 3 characters")
     @Column(name = "code")
     private String code;
 

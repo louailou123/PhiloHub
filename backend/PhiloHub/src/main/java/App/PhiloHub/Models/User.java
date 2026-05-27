@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import App.PhiloHub.Models.Enum.AuthProvider;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +20,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -59,16 +61,13 @@ public class User {
     private String lastName;
 
     @Size(min = 8, max = 70)
-    @NotBlank(message = "password is required")
     @Column(name = "password")
     private String password;
 
-    @NotNull(message = "birthday is required")
     @Past(message = "birthdate must be in the past")
     @Column(name = "bithdate")
     private LocalDate bithdate;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_country")
     private Country country;
@@ -81,9 +80,6 @@ public class User {
 
     @OneToMany(mappedBy = "sender", fetch = FetchType.LAZY)
     private List<DiscussionMessage> discussionMessages = new ArrayList<>();
-
-    @OneToMany(mappedBy = "receiver", fetch = FetchType.LAZY)
-    private List<ReceivedDiscussionMessage> receivedDiscussionMessages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Feedback> feedbacks = new ArrayList<>();
@@ -105,5 +101,11 @@ public class User {
 
     @Column(name = "is_enabled")
     private Boolean enabled=true;
+
+    @Column(name = "auth_provider")
+    private AuthProvider authProvider = AuthProvider.LOCAL;
+
+    @Column(name = "provider_id")
+    private String providerId;
 
 }
